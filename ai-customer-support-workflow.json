@@ -1,0 +1,118 @@
+{
+  "name": "AI-Driven Customer Support System with Voice Agent",
+  "nodes": [
+    {
+      "id": "1",
+      "name": "Email Trigger",
+      "type": "n8n-nodes-base.emailReadImap",
+      "parameters": {
+        "protocol": "IMAP",
+        "downloadAttachments": false
+      }
+    },
+    {
+      "id": "2",
+      "name": "Slack Trigger",
+      "type": "n8n-nodes-base.slackTrigger",
+      "parameters": {}
+    },
+    {
+      "id": "3",
+      "name": "Zendesk Trigger",
+      "type": "n8n-nodes-base.zendeskTrigger",
+      "parameters": {}
+    },
+    {
+      "id": "4",
+      "name": "Twilio Voice Trigger",
+      "type": "n8n-nodes-base.twilio",
+      "parameters": {
+        "operation": "incomingCall"
+      }
+    },
+    {
+      "id": "5",
+      "name": "Speech-to-Text",
+      "type": "n8n-nodes-base.openAiWhisper",
+      "parameters": {
+        "language": "en"
+      }
+    },
+    {
+      "id": "6",
+      "name": "AI Classifier",
+      "type": "n8n-nodes-base.openAi",
+      "parameters": {
+        "model": "gpt-4",
+        "prompt": "Classify this support request into: Billing, Technical Issue, General Inquiry, Escalation. Then generate a polite reply."
+      }
+    },
+    {
+      "id": "7",
+      "name": "Decision Router",
+      "type": "n8n-nodes-base.switch",
+      "parameters": {
+        "rules": [
+          { "value": "Billing" },
+          { "value": "Technical Issue" },
+          { "value": "General Inquiry" },
+          { "value": "Escalation" }
+        ]
+      }
+    },
+    {
+      "id": "8",
+      "name": "Auto Reply (Email/Slack/Zendesk)",
+      "type": "n8n-nodes-base.emailSend",
+      "parameters": {
+        "subject": "Support Response",
+        "text": "AI-generated reply based on classification."
+      }
+    },
+    {
+      "id": "9",
+      "name": "Text-to-Speech",
+      "type": "n8n-nodes-base.googleCloudTts",
+      "parameters": {
+        "language": "en-US",
+        "voice": "female"
+      }
+    },
+    {
+      "id": "10",
+      "name": "Voice Reply",
+      "type": "n8n-nodes-base.twilio",
+      "parameters": {
+        "operation": "playAudio"
+      }
+    },
+    {
+      "id": "11",
+      "name": "CRM Update",
+      "type": "n8n-nodes-base.hubspot",
+      "parameters": {
+        "operation": "create",
+        "resource": "ticket"
+      }
+    },
+    {
+      "id": "12",
+      "name": "Telegram Notify",
+      "type": "n8n-nodes-base.telegram",
+      "parameters": {
+        "chatId": "YOUR_CHAT_ID",
+        "text": "New support ticket classified and handled."
+      }
+    }
+  ],
+  "connections": {
+    "Email Trigger": ["AI Classifier"],
+    "Slack Trigger": ["AI Classifier"],
+    "Zendesk Trigger": ["AI Classifier"],
+    "Twilio Voice Trigger": ["Speech-to-Text"],
+    "Speech-to-Text": ["AI Classifier"],
+    "AI Classifier": ["Decision Router"],
+    "Decision Router": ["Auto Reply (Email/Slack/Zendesk)", "Text-to-Speech", "CRM Update", "Telegram Notify"],
+    "Text-to-Speech": ["Voice Reply"]
+  }
+}
