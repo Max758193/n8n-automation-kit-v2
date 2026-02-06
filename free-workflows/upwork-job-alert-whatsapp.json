@@ -1,0 +1,85 @@
+{
+  "name": "Upwork Job Alert to WhatsApp (Twilio Free)",
+  "nodes": [
+    {
+      "parameters": {
+        "triggerTimes": {
+          "item": [
+            {
+              "interval": 30,
+              "unit": "minutes"
+            }
+          ]
+        }
+      },
+      "id": "1",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://www.upwork.com/ab/feed/jobs/rss?api_params=1&sort=recency&q=n8n%20OR%20automation%20OR%20no-code%20OR%20whatsapp%20bot%20OR%20telegram%20bot",
+        "pollTimes": {
+          "item": [
+            {
+              "interval": 30,
+              "unit": "minutes"
+            }
+          ]
+        }
+      },
+      "id": "2",
+      "name": "Upwork RSS Feed",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "from": "whatsapp:+14155238886",
+        "to": "whatsapp:+92YOURNUMBERHERE",
+        "message": "New Upwork Job Alert!\nTitle: {{ $json.title }}\nLink: {{ $json.link }}\nSnippet: {{ $json.description | truncate: 150 }}..."
+      },
+      "id": "3",
+      "name": "Send WhatsApp Alert",
+      "type": "n8n-nodes-base.twilio",
+      "typeVersion": 1,
+      "position": [680, 300],
+      "credentials": {
+        "twilioApi": {
+          "id": "YOUR_TWILIO_CREDENTIAL",
+          "name": "Twilio account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Upwork RSS Feed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upwork RSS Feed": {
+      "main": [
+        [
+          {
+            "node": "Send WhatsApp Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {},
+  "versionId": "1"
+}
