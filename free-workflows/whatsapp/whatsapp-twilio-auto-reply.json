@@ -1,0 +1,108 @@
+{
+  "name": "WhatsApp Auto Reply Bot (Twilio Free Sandbox)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "whatsapp-incoming",
+        "options": {}
+      },
+      "id": "1",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "random-webhook-id"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "key": "={{ $json.Body }}",
+              "operation": "contains",
+              "value": "hello"
+            }
+          ]
+        }
+      },
+      "id": "2",
+      "name": "IF Hello",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "from": "whatsapp:+14155238886",
+        "to": "={{ $json.From }}",
+        "message": "Hello! How can I assist you today?"
+      },
+      "id": "3",
+      "name": "Reply Hello",
+      "type": "n8n-nodes-base.twilio",
+      "typeVersion": 1,
+      "position": [680, 200],
+      "credentials": {
+        "twilioApi": {
+          "id": "YOUR_TWILIO_CREDENTIAL",
+          "name": "Twilio account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "from": "whatsapp:+14155238886",
+        "to": "={{ $json.From }}",
+        "message": "Thanks for your message! I'll get back to you soon."
+      },
+      "id": "4",
+      "name": "Default Reply",
+      "type": "n8n-nodes-base.twilio",
+      "typeVersion": 1,
+      "position": [680, 400],
+      "credentials": {
+        "twilioApi": {
+          "id": "YOUR_TWILIO_CREDENTIAL",
+          "name": "Twilio account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "IF Hello",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Hello": {
+      "main": [
+        [
+          {
+            "node": "Reply Hello",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Default Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "saveExecutionProgress": true
+  },
+  "versionId": "1"
+}
